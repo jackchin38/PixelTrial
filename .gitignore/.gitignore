@@ -1,0 +1,4 @@
+import os, sys
+from uiautomator import device as d
+
+os.system('adb shell am start -a android.intent.action.CALL -d tel:112')
