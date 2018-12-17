@@ -1,0 +1,80 @@
+import uiautomator
+import os
+import subprocess
+import time
+ 
+
+#__________________________________________________________________________________
+#建PORT
+def ComPort(d):
+    #__________________________________________________________________________________
+    #建port
+    tmp = subprocess.getoutput('adb devices').split('\n')
+    tmp.remove('List of devices attached')
+
+
+    for i in range(len(tmp) -1 ):
+        tmp[i] = tmp[i].strip('device').strip()
+        print (tmp[i])
+        os.system('adb -s ' + tmp[i] + ' reconnect')
+        port = int(i + 1000)
+        d.append(uiautomator.Device(tmp[i], port))
+        print('Device {} is {} '.format (i , tmp[i]) )
+        print(d[i].info)
+
+
+    #__________________________________________________________________________________
+    #選取機台
+    print ('\nThere are {} devices in total'.format(len(d)))
+
+    if len(d) < 2: #只有一台就不用選
+        i = 0
+    else:
+        i = input('Please selecet the device') #兩台以上就要選
+        int (i)
+    
+    return i,d
+    
+#__________________________________________________________________________________
+#解鎖畫面
+def Wake_Up(i):
+    d[i].screen.on()
+    d[i](resourceId="com.android.systemui:id/lock_icon").click()
+    pass
+
+#__________________________________________________________________________________
+#打Call
+def Call_Conduct(i):
+    temp = input('Please input the number to dial:\n')
+    numb = []
+    for count in range(len(temp)):
+        numb.append(temp[count])
+    print (numb)
+
+    #開啟播號畫面
+    d[i](className ="android.widget.TextView", text = 'Phone').click()
+    d[i](resourceId="com.google.android.dialer:id/fab").click()
+
+    #輸入號碼
+    for number in range(len(numb)):
+        d[i](resourceId="com.google.android.dialer:id/dialpad_key_number", text = numb[number]).click()
+    
+    #播出
+    d[i](resourceId="com.google.android.dialer:id/dialpad_floating_action_button").click() 
+    
+    #等候幾秒後掛斷
+    time.sleep(10)
+    d[i](resourceId="com.google.android.dialer:id/incall_end_call").click()
+
+    print('Call End')
+
+#__________________________________________________________________________________
+
+
+
+#主程式
+if __name__ == '__main__':
+    d = [] #Device list
+    i,d = ComPort(d)
+    Wake_Up(i)
+    Call_Conduct(i)
